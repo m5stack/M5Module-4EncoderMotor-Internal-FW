@@ -15,7 +15,7 @@
 #define I2C_READ_OPERATION		1
 #define	I2C_RECEIVE_BUFFER_LEN	16
 
-#define FIRMWARE_VERSION 3
+#define FIRMWARE_VERSION 2
 
 static const uint32_t crc_table[0x100] = {
   0x00000000, 0x04C11DB7, 0x09823B6E, 0x0D4326D9, 0x130476DC, 0x17C56B6B, 0x1A864DB2, 0x1E475005, 0x2608EDB8, 0x22C9F00F, 0x2F8AD6D6, 0x2B4BCB61, 0x350C9B64, 0x31CD86D3, 0x3C8EA00A, 0x384FBDBD, 
@@ -131,10 +131,6 @@ __attribute__((weak)) void i2c2_receive_callback(uint8_t *rx_data, uint16_t len)
 		{
 			i2c2_set_send_data((uint8_t *)&encoder_ab_mode, 1);
 		}						
-		else if (rx_data[0] == 0xD1)
-		{
-			i2c2_set_send_data((uint8_t *)&soft_start_stop_switch, 1);
-		}						
 		else		
 			I2CRead(rx_data[0]);
 	} 
@@ -204,16 +200,12 @@ __attribute__((weak)) void i2c2_receive_callback(uint8_t *rx_data, uint16_t len)
 					while(!Write_Code());
 				}
 			}
-		}	 
+		}		
 		else if (rx_data[0] == 0xD0) {
 			encoder_ab_mode = rx_data[1];
 			set_ab_mode();
 			flash_data_write_back();
-		}  
-		else if (rx_data[0] == 0xD1) {
-			soft_start_stop_switch = rx_data[1];
-			flash_data_write_back();
-		}  
+		}		
 		else			
 			I2CWrite(rx_data[0], &rx_data[1], len - 1);
 	}

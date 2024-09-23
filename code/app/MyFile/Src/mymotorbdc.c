@@ -2,10 +2,6 @@
 
 #include "tim.h"
 
-#include "mysys.h"
-
-#include <stdlib.h>
-
 #define M1R_H GPIOB->BSRR=(uint32_t)1<<14
 #define M1R_L GPIOB->BSRR=(uint32_t)(1<<14)<<16
 #define M1F_H GPIOB->BSRR=(uint32_t)1<<15
@@ -26,14 +22,8 @@
 #define M4F_H GPIOB->BSRR=(uint32_t)1<<3
 #define M4F_L GPIOB->BSRR=(uint32_t)(1<<3)<<16
 
-uint32_t normal_motor_pid_velocity_output_ramp = 100;
-float normal_output_rate = 0.0f;
-int16_t setpoint = 0, last_setpoint = 0;
-int16_t output = 0, output_prev = 0;
-uint32_t my_timestamp_now = 0;
-uint32_t my_timestamp_prev = 0;
-float my_Ts = 0.0f;
-uint8_t is_bootup = 0;
+
+
 
 void SetMotorDir(uint8_t port,uint8_t dir)
 {
@@ -143,82 +133,15 @@ void SetMotorPwm(uint8_t port,uint8_t value)
 
 void SetMotorThrottle(uint8_t port, int8_t throttle)
 {
-    int32_t ramp_temp;
-	
-    if(config[port][0] == 0x00 && (((soft_start_stop_switch >> port) & 0x01)== 0x01)) {
-        setpoint = throttle;
-        if (last_setpoint != setpoint) {
-            if (abs(last_setpoint) <= 20) {
-                is_bootup = 1;
-            }
-            else if (abs(setpoint) <= 20) {
-                is_bootup = 2;
-            }
-            else if ((setpoint > 0 && last_setpoint < 0) || (setpoint < 0 && last_setpoint > 0)) {
-                is_bootup = 3;
-            }
-            output = setpoint;
-            last_setpoint = setpoint;
-        }
-        my_timestamp_now = micros();
-        my_Ts = (my_timestamp_now - my_timestamp_prev) * 1e-6f; 
-        if (is_bootup) {
-            if (my_Ts >= 0.1f) {
-                if(normal_motor_pid_velocity_output_ramp > 0) {
-                    // limit the acceleration by ramping the output
-                    normal_output_rate = (setpoint - output_prev) / my_Ts;
-                    ramp_temp = -normal_motor_pid_velocity_output_ramp;
-                    if (normal_output_rate > normal_motor_pid_velocity_output_ramp) {
-                        output = output_prev + normal_motor_pid_velocity_output_ramp * my_Ts;
-                    }
-                    else if (normal_output_rate < ramp_temp)
-                        output = output_prev - normal_motor_pid_velocity_output_ramp * my_Ts;
-                    else if ((normal_output_rate <= normal_motor_pid_velocity_output_ramp) && (normal_output_rate >= ramp_temp)) {
-                        output = setpoint;
-                        is_bootup = 0;
-                    }
-                }
-
-                if(output>0)
-                {
-                    SetMotorDir(port, MDIR_FFW);
-                    SetMotorPwm(port, output * 255 / 127);
-                }
-                else
-                {
-                    SetMotorDir(port, MDIR_REV);
-                    SetMotorPwm(port, (-output) * 255 / 127);   
-                }        
-                output_prev = output;
-                my_timestamp_prev = my_timestamp_now; 
-            } 
-        }
-        else {
-            if(throttle>0)
-            {
-                SetMotorDir(port, MDIR_FFW);
-                SetMotorPwm(port, throttle * 255 / 127);
-            }
-            else
-            {
-                SetMotorDir(port, MDIR_REV);
-                SetMotorPwm(port, (-throttle) * 255 / 127);   
-            }
-            output_prev = output;
-            my_timestamp_prev = my_timestamp_now;                         
-        } 
+    if(throttle>0)
+    {
+        SetMotorDir(port, MDIR_FFW);
+        SetMotorPwm(port, throttle * 255 / 127);
     }
-    else {
-        if(throttle>0)
-        {
-            SetMotorDir(port, MDIR_FFW);
-            SetMotorPwm(port, throttle * 255 / 127);
-        }
-        else
-        {
-            SetMotorDir(port, MDIR_REV);
-            SetMotorPwm(port, (-throttle) * 255 / 127);
-        }
+    else
+    {
+        SetMotorDir(port, MDIR_REV);
+        SetMotorPwm(port, (-throttle) * 255 / 127);   
     }
 }
 

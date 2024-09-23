@@ -4,6 +4,4 @@
 void InitMysys(void);
 void LoopMysys(void);
 
-extern volatile uint8_t config[4][13];
-
 #endif

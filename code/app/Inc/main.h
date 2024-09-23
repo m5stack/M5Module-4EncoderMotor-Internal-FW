@@ -54,7 +54,6 @@ extern __IO uint8_t usAdcValue8[ADC_CHANNEL_NUMS];
 extern __IO uint16_t usAdcValue16[ADC_CHANNEL_NUMS];
 extern volatile uint8_t flag_jump_bootloader;
 extern uint8_t encoder_ab_mode;
-extern uint8_t soft_start_stop_switch;
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -65,7 +64,6 @@ void i2c_address_write_to_flash(void);
 void user_i2c_init(void);
 void init_flash_data(void);
 void flash_data_write_back(void);
-uint32_t micros(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
